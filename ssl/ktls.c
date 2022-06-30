@@ -212,6 +212,12 @@ int ktls_check_supported_cipher(const SSL *s, const EVP_CIPHER *c,
 # ifdef OPENSSL_KTLS_AES_GCM_128
         || EVP_CIPHER_is_a(c, "AES-128-GCM")
 # endif
+# ifdef OPENSSL_KTLS_ARIA_GCM_128
+        || EVP_CIPHER_is_a(c, "ARIA-128-GCM")
+# endif
+# ifdef OPENSSL_KTLS_ARIA_GCM_256
+        || EVP_CIPHER_is_a(c, "ARIA-256-GCM")
+# endif
 # ifdef OPENSSL_KTLS_AES_GCM_256
         || EVP_CIPHER_is_a(c, "AES-256-GCM")
 # endif
@@ -310,6 +316,36 @@ int ktls_configure_crypto(SSL *s, const EVP_CIPHER *c, EVP_CIPHER_CTX *dd,
         if (!is_tx
                 && !check_rx_read_ahead(s,
                                         crypto_info->chacha20poly1305.rec_seq))
+            return 0;
+        return 1;
+# endif
+# ifdef OPENSSL_KTLS_ARIA_GCM_128
+    case NID_aria_128_gcm:
+        crypto_info->gcm128.info.cipher_type = TLS_CIPHER_ARIA_GCM_128;
+        crypto_info->gcm128.info.version = s->version;
+        crypto_info->tls_crypto_info_len = sizeof(crypto_info->gcm128);
+        memcpy(crypto_info->gcm128.iv, iiv + EVP_GCM_TLS_FIXED_IV_LEN,
+               TLS_CIPHER_ARIA_GCM_128_IV_SIZE);
+        memcpy(crypto_info->gcm128.salt, iiv, TLS_CIPHER_ARIA_GCM_128_SALT_SIZE);
+        memcpy(crypto_info->gcm128.key, key, EVP_CIPHER_get_key_length(c));
+        memcpy(crypto_info->gcm128.rec_seq, rl_sequence,
+               TLS_CIPHER_ARIA_GCM_128_REC_SEQ_SIZE);
+        if (!is_tx && !check_rx_read_ahead(s, crypto_info->gcm128.rec_seq))
+            return 0;
+        return 1;
+# endif
+# ifdef OPENSSL_KTLS_ARIA_GCM_256
+    case NID_aria_256_gcm:
+        crypto_info->gcm256.info.cipher_type = TLS_CIPHER_ARIA_GCM_256;
+        crypto_info->gcm256.info.version = s->version;
+        crypto_info->tls_crypto_info_len = sizeof(crypto_info->gcm256);
+        memcpy(crypto_info->gcm256.iv, iiv + EVP_GCM_TLS_FIXED_IV_LEN,
+               TLS_CIPHER_ARIA_GCM_256_IV_SIZE);
+        memcpy(crypto_info->gcm256.salt, iiv, TLS_CIPHER_ARIA_GCM_256_SALT_SIZE);
+        memcpy(crypto_info->gcm256.key, key, EVP_CIPHER_get_key_length(c));
+        memcpy(crypto_info->gcm256.rec_seq, rl_sequence,
+               TLS_CIPHER_ARIA_GCM_256_REC_SEQ_SIZE);
+        if (!is_tx && !check_rx_read_ahead(s, crypto_info->gcm256.rec_seq))
             return 0;
         return 1;
 # endif

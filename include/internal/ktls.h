@@ -215,6 +215,8 @@ static ossl_inline ossl_ssize_t ktls_sendfile(int s, int fd, off_t off,
 #    endif
 #   endif
 #   define OPENSSL_KTLS_AES_GCM_128
+#   define OPENSSL_KTLS_ARIA_GCM_128
+#   define OPENSSL_KTLS_ARIA_GCM_256
 #   if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
 #    define OPENSSL_KTLS_AES_GCM_256
 #    define OPENSSL_KTLS_TLS13
@@ -260,6 +262,12 @@ struct tls_crypto_info_all {
 #   endif
 #   ifdef OPENSSL_KTLS_CHACHA20_POLY1305
         struct tls12_crypto_info_chacha20_poly1305 chacha20poly1305;
+#   endif
+#   ifdef OPENSSL_KTLS_ARIA_GCM_128
+        struct tls12_crypto_info_aria_gcm_128 ariagcm128;
+#   endif
+#   ifdef OPENSSL_KTLS_ARIA_GCM_256
+        struct tls12_crypto_info_aria_gcm_256 ariagcm256;
 #   endif
     };
     size_t tls_crypto_info_len;
